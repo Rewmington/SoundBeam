@@ -451,6 +451,9 @@ class SoundBeamApp(ttk.Window):
         if ok:
             self.btn_bt_conn.configure(text="断开")
             self.bt_state_var.set("已连接：手机音频正从电脑扬声器播放，点「断开」可停止")
+            # 同步主状态区：蓝牙已连，主状态区不再显示「空闲」
+            self.state_var.set("● 蓝牙已连接（手机音频正从电脑扬声器播出）")
+            self.state_label.configure(bootstyle=SUCCESS)
             self._log(f"蓝牙接收已连接（状态 {status}）")
         else:
             self.bt_state_var.set(status)
@@ -470,8 +473,10 @@ class SoundBeamApp(ttk.Window):
                 self._log(f"断开失败：{exc}")
             else:
                 self._log("蓝牙接收已断开，服务已关闭")
-            self.after(0, lambda: self.bt_state_var.set(
-                "已断开：蓝牙接收服务已停止，手机声音不再从电脑播出"))
+            self.after(0, lambda: (
+                self.bt_state_var.set("已断开：蓝牙接收服务已停止，手机声音不再从电脑播出"),
+                self.state_var.set("● 空闲"),
+                self.state_label.configure(bootstyle="secondary")))
 
         threading.Thread(target=worker, daemon=True).start()
 

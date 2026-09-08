@@ -83,6 +83,8 @@ class AudioReceiver:
         self._next_seq = None
         self._stream_active = False
         self._stopped = False
+        self._sample_rate = 0
+        self._channels = 0
         self._recv_total = 0
         self._loss_total = 0
 
@@ -162,7 +164,10 @@ class AudioReceiver:
                     self.last_heartbeat_ts = time.time()
                     continue
                 if pkt.is_stop:
-                    self._stopped = True
+                    # 收到停止包：清空流与远端地址，让界面状态能复位回「空闲/等待连接」，
+                    # 且不再继续往播放器供数（get_chunk 会因 _stopped 返回 None）。
+                    self._reset_stream()
+                    self.remote_addr = None
                     continue
                 if pkt.is_heartbeat:
                     self.last_heartbeat_ts = time.time()

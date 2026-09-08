@@ -63,7 +63,12 @@ class AudioCaptureService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
-            ACTION_STOP -> stopSelf()
+            ACTION_STOP -> {
+                // 立即置运行标志为 false，让界面轮询马上从「正在发送」复位为「已停止」，
+                // 不等异步的 onDestroy 才更新（避免停止后仍显示正在发送）。
+                isRunning = false
+                stopSelf()
+            }
             ACTION_START -> startCapture(intent)
             ACTION_SET_MUTE -> setMutePhone(intent.getBooleanExtra(EXTRA_MUTE_PHONE, false))
         }
