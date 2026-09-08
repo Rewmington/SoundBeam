@@ -1,0 +1,47 @@
+# ---- Python (desktop) ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- Android (手机端) ----
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/captures/
+*.apk
+*.aab
+
+# ---- 本机个人配置（保留 .claude/plans 方案文档）----
+.claude/*
+!.claude/plans/
+
+# ---- 通用 ----
+.DS_Store
+Thumbs.db
+*.log
+# ---- 本机运行环境配置 ----
+reasonix.toml
+
+# ---- Reasonix 运行痕迹 ----
+.reasonix/
+
+# ---- PyInstaller 打包产物 ----
+build/
+dist/
+*.spec
+
+# ---- 蓝牙 helper 编译产物 ----
+desktop/bthelper.exe
+desktop/bt/bin/
+desktop/bt/obj/
+
+# ---- 宣传/演示临时产物（截图工具、素材、文案）不进产品仓库 ----
+desktop/ui_renders/
+desktop/capture_real.py
+desktop/capture_driver.py
+docs/宣传_V3.md

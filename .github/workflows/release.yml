@@ -1,0 +1,116 @@
+# SoundBeam 自动发布工作流
+# 打一个 tag 并推送（例如 git tag v0.1.0 && git push origin v0.1.0）即触发：
+#   - Windows 云端打包 SoundBeam.exe（含内置 bthelper.exe，免装 Python）
+#   - Ubuntu 云端构建 Android 安装包 app-debug.apk
+# 最后由云端自动创建 GitHub Release 并挂载两个产物。
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # 支持手动触发，便于在刚启用 Actions 的仓库上也能立刻跑、且可指定 tag
+  workflow_dispatch:
+
+# 需要写权限才能在仓库上创建 Release
+permissions:
+  contents: write
+
+jobs:
+  # ---------- 电脑端：Windows 打包 ----------
+  desktop:
+    runs-on: windows-latest
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: 安装 .NET 8（用于编译蓝牙 bthelper.exe）
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: 编译蓝牙 helper（bthelper.exe，自包含单文件）
+        run: >
+          dotnet publish desktop/bt/bthelper.csproj
+          -c Release -r win-x64 --self-contained true
+          -o desktop/bt/out
+
+      - name: 把 bthelper.exe 放到桌面端目录（PyInstaller 打包时会内置）
+        run: Copy-Item desktop/bt/out/bthelper.exe desktop/bthelper.exe
+
+      - name: 安装 Python 依赖 + PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r desktop/requirements.txt pyinstaller
+
+      - name: 打包单文件 SoundBeam.exe
+        run: >
+          python -m PyInstaller --noconfirm --clean --onefile --windowed
+          --name SoundBeam --paths . --collect-data ttkbootstrap
+          --hidden-import pystray._win32
+          --icon assets/soundbeam.ico
+          --add-binary "desktop/bthelper.exe;."
+          desktop/launcher.py
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundBeam-exe
+          path: dist/SoundBeam.exe
+
+  # ---------- 手机端：Android 构建（debug 包默认签名，可直接安装） ----------
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 安装 JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: 接受 Android SDK 许可（编译时需要平台 35 等组件）
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+
+      - name: 授予 gradlew 执行权限
+        run: chmod +x android/gradlew
+
+      - name: 构建 debug APK
+        run: ./gradlew assembleDebug
+        working-directory: android
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundBeam-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  # ---------- 汇总发布：集齐两个产物后创建 Release ----------
+  release:
+    needs: [desktop, android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+
+      - name: 下载两个作业的产物
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 创建 GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/SoundBeam-exe/SoundBeam.exe
+            artifacts/SoundBeam-apk/app-debug.apk
+          generate_release_notes: true
+          draft: false

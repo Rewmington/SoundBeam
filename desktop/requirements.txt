@@ -1,0 +1,4 @@
+sounddevice>=0.5.3
+numpy>=1.26
+ttkbootstrap>=2.2
+pystray>=0.19.5

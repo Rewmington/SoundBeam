@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 简单音符形启动图标（vector） -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 背景圆角方块 -->
+    <path
+        android:fillColor="#1A73E8"
+        android:pathData="M8,0 L100,0 A8,8 0 0 1 108,8 L108,100 A8,8 0 0 1 100,108 L8,108 A8,8 0 0 1 0,100 L0,8 A8,8 0 0 1 8,0 Z" />
+    <!-- 音符：圆点 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,30 m0,10 a10,10 0 1,1 0,-20 a10,10 0 1,1 0,20
+                          M64,22 m0,10 a10,10 0 1,1 0,-20 a10,10 0 1,1 0,20" />
+    <!-- 音符：旗杆 -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M44,40 L44,84 M74,32 L74,76" />
+    <!-- 音符：连梁 -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="6"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M44,40 L74,32" />
+</vector>
